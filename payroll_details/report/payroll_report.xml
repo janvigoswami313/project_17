@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--        <delete model="ir.ui.view" id="action_report_payslip"/>-->
+        <record id="action_report_payslip_pdf" model="ir.actions.report">
+            <field name="name">Payslip PDF</field>
+            <field name="model">hr.payslip</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">payroll_details.payroll_report_template</field>
+            <field name="report_file">payroll_details.payroll_report_template</field>
+<!--            problem to show name in web url-->
+<!--            <field name="print_report_name">'Payslip - %s' % (object.employee_id.name)</field>-->
+            <field name="binding_type">report</field>
+        </record>
+
+        <template id="payroll_report_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <h2><span t-field="o.name"/></h2>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Marital Status</th>
+                                        <th>Designation</th>
+                                        <th>Pay Period</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span t-field="o.employee_id.name"/></td>
+                                        <td><span t-field="o.employee_id.marital"/></td>
+                                        <td><span t-field="o.job_id.name"/></td>
+                                        <td><span t-field="o.date_from"/>-<span t-field="o.date_to"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span t-field="o.employee_id.private_street"/></td>
+                                        <td/>
+                                        <td/>
+                                        <td/>
+                                    </tr>
+                                    <tr>
+                                        <td><span t-field="o.employee_id.private_city"/><span t-field="o.employee_id.private_zip"/></td>
+                                        <td><b>Person in Charge</b></td>
+                                        <td><b>Identification</b></td>
+                                        <td><b>Computed On</b></td>
+                                    </tr>
+                                    <tr>
+                                        <td><span t-field="o.employee_id.work_email"/></td>
+                                        <td><span t-field="o.employee_id.children"/></td>
+                                        <td><span t-field="o.employee_id.identification_id"/></td>
+<!--                                        <td><span t-field="o.paid_date"/></td>-->
+                                        <td/>
+                                    </tr>
+                                    <tr>
+                                        <td><b>Contract Start Date</b></td>
+                                        <td><b>Contract Type</b></td>
+                                        <td><b>Working Schedule</b></td>
+                                        <td/>
+                                    </tr>
+                                    <tr>
+                                        <td><span t-field="o.contract_id.date_start"/></td>
+                                        <td><span t-field="o.contract_id.contract_type_id.name"/></td>
+                                        <td><span t-field="o.employee_id.resource_calendar_id.name"/></td>
+                                        <td/>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div>
+                                <label><h6><b>Basic Salary</b></h6></label>
+                                <span t-field="o.contract_id.wage" style="margin-left:100px; color:purple;"/>
+                            </div>
+                            <hr/>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>name</th>
+                                        <th>Number of Hours</th>
+                                        <th>Number of Days</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.worked_days_line_ids.sorted(key=lambda l: l.work_entry_type_id.sequence)" t-as="worked_days">
+                                    <tr>
+                                        <td><span t-field="worked_days.work_entry_type_id.name"/></td>
+                                        <td><span t-field="worked_days.number_of_hours" t-options='{"widget": "float", "precision": 2}'/></td>
+                                        <td><span t-field="worked_days.number_of_days" t-options='{"widget": "float", "precision": 1}'/></td>
+                                        <td class="text-right"><span t-field="worked_days.amount" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                    </tr>
+                                    </t>
+                                    <t t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip).sorted(key=lambda line: line.sequence)" t-as="line">
+                                    <tr t-att-style="'color: #87CEEB; border-bottom: 2px solid #333;' if line.name.lower() in ['basic salary', 'gross', 'net salary'] else ''">
+                                        <td><span t-field="line.name"/></td>
+                                        <td/>
+                                        <td/>
+                                        <td><span t-field="line.total"/></td>
+                                    </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            <p>The net amount will be recovered from the first positive remuneration established after this</p>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

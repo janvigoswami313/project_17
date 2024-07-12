@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="employee_timeoff" model="website.menu">
+            <field name="name">Timeoff</field>
+            <field name="url">/employee_timeoff</field>
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence">60</field>
+        </record>
+    </data>
+
+    <template id="employees_timeoff_data" name="Employee Timeoff List">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="container">
+                    <h3 style="color: #2C3E50; text-align: center; margin-top: 20px;">Employees Timeoff Details</h3>
+                    <br/>
+                    <table class="table table-striped" id="employees_timeoff_data_table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Time Off Type</th>
+                                <th>Description</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="employees_timeoff_data" t-as="timeoff">
+                                <tr class="clickable-row1" t-att-data-href="'/timeoff/' + str(timeoff.id)"
+                                    style="height: 50px;">
+                                    <td><t t-esc="timeoff.all_employee_ids.name"/></td>
+                                    <td><t t-esc="timeoff.holiday_status_id.name"/></td>
+                                    <td><t t-esc="timeoff.name"/></td>
+                                    <td><t t-esc="timeoff.date_from"/></td>
+                                    <td><t t-esc="timeoff.date_to"/></td>
+                                    <td><t t-esc="timeoff.duration_display"/></td>
+                                    <td> <t t-esc="dict(timeoff._fields['state'].selection).get(timeoff.state, timeoff.state)"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="employee_timeoff_data_form" name="Employee Timeoff Form">
+        <t t-call="website.layout">
+            <form t-attf-action="/timeoff/{{ timeoff.id }}" method="post" id="employees_timeoff_data_form" >
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div style="margin-bottom: 20px; ">
+                            <button type="button" class="button" id="new_timeoff_btn"
+                                    style="margin-top:20px; margin-left:4px; height:35px; width:55px; background-color:#520052; color:white; border-radius: 4px; display:flex; justify-content: center;  align-items: center;">New</button>
+                        </div>
+                        <hr/>
+                        <div class="row mb-4" t-att-data-current-stage="current_stage">
+                            <div class="col-12 d-flex justify-content-between align-items-center">
+                                <div class="d-flex">
+                                    <t t-set="button_stage_pairs" t-value="[
+                                        ('Approve', 'Second Approval'),
+                                        ('Validate', 'Approved'),
+                                        ('Refuse', 'Refused'),
+                                        ('Mark as read', 'To Submit'),
+                                        ('Cancel', 'Canceled'),
+                                        ('Confirm', 'To Approve'),
+                                    ]"/>
+                                    <t t-foreach="button_stage_pairs" t-as="pair">
+                                        <button type="button" class="btn btn-default mx-1 stage-change-btn"
+                                                t-att-data-stage="pair[1]" t-att-data-action="pair[0]"
+                                                style="border-radius: 4px; color: white;">
+                                            <t t-esc="pair[0]"/>
+                                        </button>
+                                    </t>
+                                </div>
+                                <div class="d-flex odoo-stages">
+                                    <t t-foreach="stages" t-as="stage">
+                                        <div class="stage-box" t-att-data-stage="stage['name']">
+                                            <div class="stage-name">
+                                                <t t-esc="stage['name']"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                        <hr/>
+                        <div>
+                            <div style="width:100%;">
+                                <label style="width:18%;">
+                                    <b>Time Off Types :</b>
+                                </label>
+                                <select style="font-size: 15px; width:40%; margin-top:25px;" class="inp1"
+                                        name="holiday_status_id" id="holiday_status_id">
+                                    <t t-foreach="holiday_off" t-as="holiday">
+                                        <option t-att-value="holiday.id"
+                                                t-att-selected="holiday.id == timeoff.holiday_status_id.id"
+                                                t-esc="holiday.name"/>
+                                    </t>
+                                </select>
+                            </div>
+                            <div style="width:100%;" id="holiday_dates">
+                                <label style="width:18%;">Dates :</label>
+                                <label for="date_from" style="width:7 %;">From</label>
+                                <input type="date" name="date_from" id="date_from" style="width:17%;" class="inp1"  t-att-value="timeoff.request_date_from"/>
+                                <label for="date_to" style="width:7 %;">To</label>
+                                <input type="date" name="date_to" id="date_to" style="width:17%;" class="inp1" t-att-value="timeoff.request_date_to"/>
+                            </div>
+                            <div style="width:100%; display:none;" id="holiday_date" >
+                                <label style="width:18%;">Date :</label>
+                                <input type="date" class="inp1" name="half_day_date" id="half_day_date"  style="width:20%;" t-att-value="timeoff.request_date_from"/>
+
+                                <select class="inp1"  style="width:20%;" id="request_date_from_period_0"  name="request_date_from_period_0">
+                                    <option value="am" t-att-selected="timeoff.request_date_from_period == 'am'">Morning</option>
+                                    <option value="pm" t-att-selected="timeoff.request_date_from_period == 'pm'">Afternoon</option>
+                                </select>
+
+                            </div>
+                            <div style="width:100%; display:none;" id="custom_hour_date_1">
+                                <label style="width:18%;">Date :</label>
+                                <input type="date" class="inp1" name="custom_hour_date" id="custom_hour_date" style="width:40%;" t-att-value="timeoff.request_date_from" />
+                            </div>
+                            <div style="width: 100%; display: flex; align-items: center; margin-top:5px; margin-bottom:5px; " id="request_unit_date">
+                                <label style="width: 18%;"><b>?</b></label>
+                                <div style="display: flex; align-items: center; margin-left: 5px;">
+                                    <input type="checkbox" id="half_day_checkbox" name="half_day_checkbox" t-att-checked="timeoff.request_unit_half"/>
+                                    <label style="margin-left:5px;">Half Day</label>
+                                </div>
+                                <div style="display: flex; align-items: center; margin-left: 10%;">
+                                    <input type="checkbox" id="custom_hours_checkbox" name="custom_hours_checkbox" t-att-checked="timeoff.request_unit_hours"/>
+                                    <label style="margin-left:5px;">Custom Hours</label>
+                                </div>
+                            </div>
+                            <div style="width:100%; display:none;" id="custom_hours">
+                                <label style="width:18%;">?</label>
+                                <label for="hours_from" style="width:7 %;">From</label>
+                                <select type="selection" class="inp1" id="custom_hour_from" name="custom_hour_from"
+                                        style="width:17%;">
+                                    <option t-foreach="[('0', '12:00 AM'),
+                                                        ('0.5', '12:30 AM'),
+                                                        ('1', '1:00 AM'),
+                                                        ('1.5', '1:30 AM'),
+                                                        ('2', '2:00 AM'),
+                                                        ('2.5', '2:30 AM'),
+                                                        ('3', '3:00 AM'),
+                                                        ('3.5', '3:30 AM'),
+                                                        ('4', '4:00 AM'),
+                                                        ('4.5', '4:30 AM'),
+                                                        ('5', '5:00 AM'),
+                                                        ('5.5', '5:30 AM'),
+                                                        ('6', '6:00 AM'),
+                                                        ('6.5', '6:30 AM'),
+                                                        ('7', '7:00 AM'),
+                                                        ('7.5', '7:30 AM'),
+                                                        ('8', '8:00 AM'),
+                                                        ('8.5', '8:30 AM'),
+                                                        ('9', '9:00 AM'),
+                                                        ('9.5', '9:30 AM'),
+                                                        ('10', '10:00 AM'),
+                                                        ('10.5', '10:30 AM'),
+                                                        ('11', '11:00 AM'),
+                                                        ('11.5', '11:30 AM'),
+                                                        ('12', '12:00 PM'),
+                                                        ('12.5', '12:30 PM'),
+                                                        ('13', '1:00 PM'),
+                                                        ('13.5', '1:30 PM'),
+                                                        ('14', '2:00 PM'),
+                                                        ('14.5', '2:30 PM'),
+                                                        ('15', '3:00 PM'),
+                                                        ('15.5', '3:30 PM'),
+                                                        ('16', '4:00 PM'),
+                                                        ('16.5', '4:30 PM'),
+                                                        ('17', '5:00 PM'),
+                                                        ('17.5', '5:30 PM'),
+                                                        ('18', '6:00 PM'),
+                                                        ('18.5', '6:30 PM'),
+                                                        ('19', '7:00 PM'),
+                                                        ('19.5', '7:30 PM'),
+                                                        ('20', '8:00 PM'),
+                                                        ('20.5', '8:30 PM'),
+                                                        ('21', '9:00 PM'),
+                                                        ('21.5', '9:30 PM'),
+                                                        ('22', '10:00 PM'),
+                                                        ('22.5', '10:30 PM'),
+                                                        ('23', '11:00 PM'),
+                                                        ('23.5', '11:30 PM')
+                                    ]" t-as="option"
+                                            t-att-value="option[0]"
+                                            t-att-selected="str(option[0]) == str(timeoff.request_hour_from)">
+                                        <t t-esc="option[1]"/>
+                                    </option>
+                                </select>
+                                <label for="hours_to" style="width:7 %;">To</label>
+                                <select type="selection" class="inp1" id="custom_hour_to" name="custom_hour_to"
+                                        style="width:17%;">
+                                    <option t-foreach="[('0', '12:00 AM'),
+                                                        ('0.5', '12:30 AM'),
+                                                        ('1', '1:00 AM'),
+                                                        ('1.5', '1:30 AM'),
+                                                        ('2', '2:00 AM'),
+                                                        ('2.5', '2:30 AM'),
+                                                        ('3', '3:00 AM'),
+                                                        ('3.5', '3:30 AM'),
+                                                        ('4', '4:00 AM'),
+                                                        ('4.5', '4:30 AM'),
+                                                        ('5', '5:00 AM'),
+                                                        ('5.5', '5:30 AM'),
+                                                        ('6', '6:00 AM'),
+                                                        ('6.5', '6:30 AM'),
+                                                        ('7', '7:00 AM'),
+                                                        ('7.5', '7:30 AM'),
+                                                        ('8', '8:00 AM'),
+                                                        ('8.5', '8:30 AM'),
+                                                        ('9', '9:00 AM'),
+                                                        ('9.5', '9:30 AM'),
+                                                        ('10', '10:00 AM'),
+                                                        ('10.5', '10:30 AM'),
+                                                        ('11', '11:00 AM'),
+                                                        ('11.5', '11:30 AM'),
+                                                        ('12', '12:00 PM'),
+                                                        ('12.5', '12:30 PM'),
+                                                        ('13', '1:00 PM'),
+                                                        ('13.5', '1:30 PM'),
+                                                        ('14', '2:00 PM'),
+                                                        ('14.5', '2:30 PM'),
+                                                        ('15', '3:00 PM'),
+                                                        ('15.5', '3:30 PM'),
+                                                        ('16', '4:00 PM'),
+                                                        ('16.5', '4:30 PM'),
+                                                        ('17', '5:00 PM'),
+                                                        ('17.5', '5:30 PM'),
+                                                        ('18', '6:00 PM'),
+                                                        ('18.5', '6:30 PM'),
+                                                        ('19', '7:00 PM'),
+                                                        ('19.5', '7:30 PM'),
+                                                        ('20', '8:00 PM'),
+                                                        ('20.5', '8:30 PM'),
+                                                        ('21', '9:00 PM'),
+                                                        ('21.5', '9:30 PM'),
+                                                        ('22', '10:00 PM'),
+                                                        ('22.5', '10:30 PM'),
+                                                        ('23', '11:00 PM'),
+                                                        ('23.5', '11:30 PM')
+                                    ]" t-as="option"
+                                            t-att-value="option[0]"
+                                            t-att-selected="str(option[0]) == str(timeoff.request_hour_to)">
+                                        <t t-esc="option[1]"/>
+                                    </option>
+                                </select>
+                            </div>
+                            <div style="width:100%;" disabled="True" id="date_duration">
+                                <label style="width:18%; color:Gray;" for="duration">Duration :</label>
+                                <input type="float" name="duration" id="duration"
+                                       style="width:37%; border: none; outline: none; color:Gray; " readonly="True" />
+                                <span style="display:inline-block; color:Gray;">days</span>
+                            </div>
+                            <div style="width:100%;" disabled="True" id="hours_duration_1">
+                                <label style="width:18%; color:Gray;" for="duration">Duration :</label>
+                                <input type="float" name="hours_duration" id="hours_duration"
+                                       style="width:37%; border: none; outline: none; color:Gray; " readonly="True"/>
+                                <span style="display:inline-block; color:Gray;">days</span>
+                            </div>
+                            <div style="width:100%; display: flex; align-items: top; margin-top:9px;">
+                                <label style="width:15.7%; margin-right: 20px; " for="description">Description :</label>
+                                <textarea name="description" id="description" style="width:41%;" class="inp1 " placeholder="Add a description..."><t t-esc="timeoff.name"/></textarea>
+                            </div>
+                            <div id="supporting-docs-container" style="width:100%; ">
+                                <label style="width:17%;" for="supporting_docs">Supporting Documents :</label>
+                                <input type="file" name="supporting_docs" id="supporting_docs" class="inp1"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-12">
+                    <footer>
+                        <button onclick="history.back()" type="button" class="button" style="margin-top:20px; margin-left:85px; background-color:#520052; color:white; border-radius: 4px; height:35px; width:55px;"
+                               >Back
+                        </button>
+                        <button id="save_btn" type="submit" class="button" value="save" style="margin-top:20px; margin-left:2px; background-color:#520052; color:white; border-radius: 4px; height:35px; width:55px;"
+                                >Save
+                        </button>
+                    </footer>
+                </div>
+            </form>
+        </t>
+    </template>
+</odoo>
+
+
+
+
+
+
+
+

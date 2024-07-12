@@ -1,0 +1,59 @@
+
+.clickable-row1 {
+            cursor: pointer;
+        }
+        .clickable-row1:hover {
+            background-color: #f5f5f5;
+        }
+.inp1 {
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 5px 10px;
+    outline: none;
+    width: 70%;
+}
+
+.inp1:focus,
+.inp1:hover {
+    border-color: DodgerBlue;
+}
+
+.odoo-stages {
+    display: flex;
+    background-color: #f0f0f0;
+}
+
+.stage-box {
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #d3d3d3;
+}
+
+.stage-box:not(:last-child) {
+    border-right: 1px solid #d4d4d4;
+}
+
+.stage-name {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.stage-change-btn {
+    transition: all 0.3s ease;
+}
+
+.stage-box {
+    display: none;
+}
+
+.stage-box.active {
+    display: block;
+    background-color: #7C7BAD;
+    color: white;
+}
+
+.stage-box.completed {
+    display: block;
+    background-color: #d3d3d3;
+}

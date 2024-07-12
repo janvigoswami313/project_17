@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <record id="payroll_details" model="website.menu">
+            <field name="name">Payroll</field>
+            <field name="url">/payroll_details</field>
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence">60</field>
+        </record>
+    </data>
+
+    <template id="employee_payroll_details" name="Employee Payroll List">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure">
+                <div class="container">
+                    <h3 style="color: #2C3E50; text-align: center; margin-top: 20px;">Payroll Details</h3>
+                    <br/>
+                    <table class="table table-striped" id="payroll_details_table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Batch Name</th>
+                                <th>Company</th>
+                                <th>Basic Wage</th>
+                                <th>Gross Wage</th>
+                                <th>Net Wage</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="employees_payroll_details" t-as="payroll">
+                                <tr class="set-clickable-row" t-att-data-href="'/payroll/' + str(payroll.id)" style="height: 50px;">
+                                    <td><t t-esc="payroll.employee_id.name"/></td>
+                                    <td><t t-esc="payroll.payslip_run_id.name"/></td>
+                                    <td><t t-esc="payroll.company_id.name"/></td>
+                                    <td><t t-esc="payroll.basic_wage"/></td>
+                                    <td><t t-esc="payroll.gross_wage"/></td>
+                                    <td><t t-esc="payroll.net_wage"/></td>
+                                    <td> <t t-esc="dict(payroll._fields['state'].selection).get(payroll.state, payroll.state)"/></td>
+                                    <td>
+                                        <a t-att-href="'/report/pdf/payroll_details.action_report_payslip_pdf/%s' % payroll.id"
+                                           class="btn btn-sm btn-primary print-button"
+                                           target="_blank"
+                                           onclick="event.stopPropagation();">
+                                            Print
+                                        </a>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="payroll_details_form" name="Payroll Details Form">
+        <t t-call="website.layout">
+            <form t-attf-action="/payroll/{{ payroll.id }}" method="post" id="payroll_data_form">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <div id="wrap" class="oe_structure oe_empty">
+                    <div class="container">
+                        <div class="row" style="margin-bottom:100px;">
+                        <div class="col-md-9" style="margin-top:50px;">
+                            <h3 style="margin-bottom:5px;"><t t-esc="payroll.employee_id.name"/></h3>
+                            <h4 style="margin-bottom:30px;"><t t-esc="payroll.number"/></h4>
+                            <div class="form-group">
+                                <label for="period" style="width:15%;"><b>Period:</b></label>
+                                        <input type="date" class="inp_style" name="date_from" t-att-value="payroll.date_from" style="width:35%;" readonly="true"/>
+                                        <input type="date" class="inp_style" name="date_to" t-att-value="payroll.date_to" style="width:35%;" readonly="true"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="contract" style="width:15%;"><b>Contract:</b></label>
+                                <input type="text" class="inp_style" name="contract" t-att-value="payroll.contract_id.name" style="width:70%;" readonly="true"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="batch" style="width:15%;"><b>Batch:</b></label>
+                                <input type="text" class="inp_style" name="batch" t-att-value="payroll.payslip_run_id.name" style="width:70%;" readonly="true"/>
+                            </div>
+                            <div class="form-group">
+                                <label for="structure" style="width:15%;"><b>Structure:</b></label>
+                                <input type="text" class="inp_style" name="structure" t-att-value="payroll.struct_id.name" style="width:70%;" readonly="true"/>
+                            </div>
+                        </div>
+                         <div class="col-md-3" style="margin-top:50px;">
+                            <t t-if="payroll.id">
+                                <img t-att-src="'/web/image/hr.payslip/' + str(payroll.id) + '/image_1920'"
+                                     class="img-thumbnail" alt="Employee Photo" style="margin-left:40%;" width="100"
+                                     height="100"/>
+                            </t>
+                        </div>
+                    </div>
+                        <div class="mt-4">
+                            <ul class="nav nav-tabs ">
+                            <li >
+                                <a class="nav-link active" id="workdays-tab" data-toggle="tab" href="#workdays" role="tab">Worked Days and inputs</a>
+                            </li>
+                            <li >
+                                <a class="nav-link" id="salary-tab" data-toggle="tab" href="#salary" >Salary Computation</a>
+                            </li>
+                            <li >
+                                <a class="nav-link" id="other-tab" data-toggle="tab" href="#other">Other Info</a>
+                            </li>
+                        </ul>
+                            <div class="tab-content" id="payrollTabContent" >
+                                <div class="tab-pane fade show active" id="workdays" >
+                                <h5 style="color: #2C3E50; text-align: left; margin-top: 30px;">Worked Days</h5>
+                            <hr/>
+                                <table class="table table-striped" id="worked_days_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Number of Days</th>
+                                            <th>Number of Hours</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-set="total_days" t-value="0"/>
+                                        <t t-set="total_hours" t-value="0"/>
+                                        <t t-set="total_amount" t-value="0"/>
+                                        <t t-foreach="o.worked_days_line_ids.sorted(key=lambda l: l.work_entry_type_id.sequence)" t-as="worked_days">
+                                            <tr>
+                                                <td><span t-field="worked_days.work_entry_type_id.name"/></td>
+                                                <td><span t-field="worked_days.name"/></td>
+                                                <td><span t-field="worked_days.number_of_days" t-options='{"widget": "float", "precision": 1}'/></td>
+                                                <td><span t-field="worked_days.number_of_hours" t-options='{"widget": "float", "precision": 2}'/></td>
+                                                <td class="text-right"><span t-field="worked_days.amount" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                            </tr>
+                                        <t t-set="total_days" t-value="total_days + worked_days.number_of_days"/>
+                                        <t t-set="total_hours" t-value="total_hours + worked_days.number_of_hours"/>
+                                        <t t-set="total_amount" t-value="total_amount + worked_days.amount"/>
+                                        </t>
+                                        <tr style="height: 3em;"><td colspan="5"/></tr>
+                                        <tr style="height: 3em;" ><td colspan="5"/></tr>
+                                        <tr>
+                                            <td colspan="2"><strong>Total</strong></td>
+                                            <td><strong><span t-esc="total_days" t-options='{"widget": "float", "precision": 1}'/></strong></td>
+                                            <td><strong><span t-esc="total_hours" t-options='{"widget": "float", "precision": 2}'/></strong></td>
+                                            <td ><strong><span t-esc="total_amount" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                    <h5 style="color: #2C3E50; text-align: left; margin-top: 30px;">Other Inputs</h5>
+                                    <hr/>
+                                <table class="table table-striped" id="other_input_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="other_inputs" t-as="input">
+                                            <tr>
+                                                <td><t t-esc="input.input_type_id.name"/></td>
+                                                <td><t t-esc="input.name"/></td>
+                                                <td><t t-esc="input.amount"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                                <div class="tab-pane fade" id="salary">
+                                    <div style="margin-top:20px;">
+                                        <table class="table table-striped" id="worked_days_table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Category</th>
+                                                    <th>Quantity</th>
+                                                    <th>Rate % </th>
+                                                    <th>Rule</th>
+                                                    <th>Amount</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip).sorted(key=lambda line: line.sequence)" t-as="line">
+                                                    <tr t-att-style="'color: #6CA5BC;' if line.name.lower() in ['sum of allowance category'] else ''">
+                                                        <td><span t-field="line.name"/></td>
+                                                        <td><span t-field="line.category_id.name"/></td>
+                                                        <td><span t-field="line.quantity"/></td>
+                                                        <td><span t-field="line.rate"/></td>
+                                                        <td><span t-field="line.salary_rule_id.name"/></td>
+                                                        <td class="text-right"><span t-field="line.total" t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/></td>
+                                                        <td><span t-field="line.total"/></td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="other">
+                                    <div class="row" style="margin-top:20px;">
+                                        <div class="col-md-6" style="width:50%;">
+                                            <div class="form-group">
+                                                <label for="payslip_name" style="width:25%;"><b>Payslip Name:</b></label>
+                                                <input type="text" class="inp_style" name="payslip_name" t-att-value="payroll.name" style="width:70%;" readonly="true"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="company" style="width:25%;"><b>Company Id:</b></label>
+                                                <input type="text" class="inp_style" name="company" t-att-value="payroll.company_id.name" style="width:70%;" readonly="true"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" style="width:50%;">
+                                            <div class="form-group" style="display: flex; align-items: center;">
+                                                <label for="report" style="width: 25%; margin-right: 15px;"><b>Has Negative Net To Report:</b></label>
+                                                <input type="checkbox" class="inp_style" name="report" t-att-checked="payroll.has_negative_net_to_report" style="width:15px; height:15px; margin-bottom:10px;"/></div>
+                                            <div class="form-group">
+                                                <label for="close_date" style="width:25%;"><b>Close Date:</b></label>
+                                                <input type="date" class="inp_style" name="close_date" t-att-value="payroll.paid_date" style="width:70%;" readonly="true"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="date_ac" style="width:25%;"><b>Date Account:</b></label>
+                                                <input type="date" class="inp_style" name="date_ac" t-att-value="payroll.date" style="width:70%;" readonly="true"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="salary_journal" style="width:25%;"><b>Salary Journal:</b></label>
+                                                <input type="text" class="inp_style" name="salary_journal" t-att-value="payroll.journal_id.name" style="width:70%;" readonly="true"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="ac_entry" style="width:25%;"><b>Accounting Entry:</b></label>
+                                                <input type="text" class="inp_style" name="ac_entry" t-att-value="payroll.move_id.name" style="width:70%;" readonly="true"/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-top:20px;">
+                                                <textarea name="description" style="width:100%;" class="inp_style "
+                                                          placeholder="Add a description..."><t t-esc="payroll.note"/></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </t>
+    </template>
+</odoo>
