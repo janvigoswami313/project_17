@@ -58,11 +58,16 @@ class EmployeesTimeoffData(http.Controller):
                     data_to_write['request_date_from'] = kw.get('date_from')
 
                 if kw.get('create_new') == 'true':
-                    employee = request.env['hr.employee'].sudo().search([('user_id', '=', request.env.user.id)],
-                                                                        limit=1)
-                    data_to_write['employee_id'] = employee.id
-                    new_timeoff = request.env['hr.leave'].sudo().create(data_to_write)
-                    return redirect('/timeoff/%s' % new_timeoff.id)
+                    employee_id = kw.get('employee_id') or timeoff.employee_id.id
+                    if employee_id:
+                        employee = request.env['hr.employee'].sudo().browse(int(employee_id))
+                        if employee:
+                            data_to_write['employee_id'] = employee.id
+                            new_timeoff = request.env['hr.leave'].sudo().create(data_to_write)
+                            return redirect('/timeoff/%s' % new_timeoff.id)
+                    return request.render('employee_timeoff.error_page', {
+                        'error_message': _("Invalid employee selected. Please try again.")
+                    })
                 else:
                     timeoff.sudo().write(data_to_write)
                     return redirect('/timeoff/%s' % timeoff.id)
