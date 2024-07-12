@@ -1,0 +1,67 @@
+.clickable-row:hover {
+    background-color: #b3ecff ;
+}
+
+.editable {
+    background-color: #fff;
+}
+
+.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+hr {
+    margin-top: 0em;
+}
+
+h6 {
+    color: #5D415D;
+}
+
+label {
+    font-size: 15px;
+}
+
+input[type="radio"] {
+    display: none;
+}
+
+#showSave:checked ~ #saveButton {
+    display: inline-block;
+}
+
+#showSave:checked ~ #editButton {
+    display: none;
+}
+
+#saveButton {
+    display: none;
+}
+
+.inp {
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 5px 10px;
+    outline: none;
+    width: 70%;
+}
+
+.inp:focus,
+.inp:hover {
+    border-color: DodgerBlue;
+}
+
+#address-div {
+    display: flex;
+
+}
+
+#address-div .field {
+    display: none;
+}
+
+.hidden {
+    display: none;
+}
+
