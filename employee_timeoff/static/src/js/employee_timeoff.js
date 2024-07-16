@@ -23,6 +23,8 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
             'click .stage-change-btn': '_onStageChangeClick',
             'click #new_timeoff_btn': '_onNewTimeOffClick',
             'click #save_btn': '_onclick_save_button',
+            'click #edit_btn': '_onclick_edit_button',
+
     },
 
 //  start method to run function on initial stage
@@ -38,6 +40,7 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
             self._updateButtonVisibility();
             self._updateStageStyles();
             self._updateStageVisibility();
+            self._setFormviewReadonly(true);
         });
     },
 
@@ -424,6 +427,11 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
         });
     },
 
+     _onclick_edit_button() {
+        this.$('#edit_btn').hide();
+        this.$('#save_btn').show();
+        this._setFormviewReadonly(false);
+    },
 //  save form on click save button
 
     _onclick_save_button: function (ev) {
@@ -439,6 +447,15 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
         }
         $form.submit();
     },
+
+     _setFormviewReadonly: function (readonly) {
+            var $fields = this.$('.inp1, .readonlycheckbox');
+            if (readonly) {
+                $fields.prop('disabled', true);
+            } else {
+                $fields.prop('disabled', false);
+            }
+     },
 
 });
 

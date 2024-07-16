@@ -14,6 +14,12 @@
             <div id="wrap" class="oe_structure">
                 <div class="container">
                     <h3 style="color: #2C3E50; text-align: center; margin-top: 20px;">Employees Timeoff Details</h3>
+                   <div style="margin-bottom: 20px; ">
+                    <a t-attf-href="/timeoff/new?employee_id={{ employee_id }}" class="btn btn-primary" id="new_timeoff_btn"
+                       style="margin-top:20px; margin-left:4px; background-color:#520052; color:white;">
+                        New TimeOff
+                    </a>
+                </div>
                     <br/>
                     <table class="table table-striped" id="employees_timeoff_data_table">
                         <thead>
@@ -53,10 +59,10 @@
                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                 <div id="wrap" class="oe_structure oe_empty">
                     <div class="container">
-                        <div style="margin-bottom: 20px; ">
-                            <button type="button" class="button" id="new_timeoff_btn"
-                                    style="margin-top:20px; margin-left:4px; height:35px; width:55px; background-color:#520052; color:white; border-radius: 4px; display:flex; justify-content: center;  align-items: center;">New</button>
-                        </div>
+<!--                        <div style="margin-bottom: 20px; ">-->
+<!--                            <button type="button" class="button" id="new_timeoff_btn"-->
+<!--                                    style="margin-top:20px; margin-left:4px; height:35px; width:55px; background-color:#520052; color:white; border-radius: 4px; display:flex; justify-content: center;  align-items: center;">New</button>-->
+<!--                        </div>-->
                         <hr/>
                         <div class="row mb-4" t-att-data-current-stage="current_stage">
                             <div class="col-12 d-flex justify-content-between align-items-center">
@@ -127,11 +133,11 @@
                             <div style="width: 100%; display: flex; align-items: center; margin-top:5px; margin-bottom:5px; " id="request_unit_date">
                                 <label style="width: 18%;"><b>?</b></label>
                                 <div style="display: flex; align-items: center; margin-left: 5px;">
-                                    <input type="checkbox" id="half_day_checkbox" name="half_day_checkbox" t-att-checked="timeoff.request_unit_half"/>
+                                    <input type="checkbox" id="half_day_checkbox" class="readonlycheckbox" name="half_day_checkbox" t-att-checked="timeoff.request_unit_half"/>
                                     <label style="margin-left:5px;">Half Day</label>
                                 </div>
                                 <div style="display: flex; align-items: center; margin-left: 10%;">
-                                    <input type="checkbox" id="custom_hours_checkbox" name="custom_hours_checkbox" t-att-checked="timeoff.request_unit_hours"/>
+                                    <input type="checkbox" id="custom_hours_checkbox"  class="readonlycheckbox" name="custom_hours_checkbox" t-att-checked="timeoff.request_unit_hours"/>
                                     <label style="margin-left:5px;">Custom Hours</label>
                                 </div>
                             </div>
@@ -279,6 +285,9 @@
                     <footer>
                         <button onclick="history.back()" type="button" class="button" style="margin-top:20px; margin-left:85px; background-color:#520052; color:white; border-radius: 4px; height:35px; width:55px;"
                                >Back
+                        </button>
+                        <button  id="edit_btn" type="button" class="button" value="edit"
+                                style="margin-bottom:20px; margin-left:2px; background-color:#520052; color:white; border-radius: 4px; height:35px; width:55px;">Edit
                         </button>
                         <button id="save_btn" type="submit" class="button" value="save" style="margin-top:20px; margin-left:2px; background-color:#520052; color:white; border-radius: 4px; height:35px; width:55px;"
                                 >Save

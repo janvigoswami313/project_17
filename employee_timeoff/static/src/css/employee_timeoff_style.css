@@ -57,3 +57,15 @@
     display: block;
     background-color: #d3d3d3;
 }
+
+#showSave:checked ~ #save_btn {
+    display: inline-block;
+}
+
+#showSave:checked ~ #edit_btn {
+    display: none;
+}
+
+#save_btn {
+    display: none;
+}
