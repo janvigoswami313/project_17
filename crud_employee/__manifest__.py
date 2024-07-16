@@ -6,11 +6,11 @@
 
     'author': "janvi",
 
-    'depends': ['base','website'],
+    'depends': ['base','website','hr'],
 
     'data': [
         'view/employees_website.xml',
-
+        'view/res_users_changes.xml',
     ],
 
     'assets': {
