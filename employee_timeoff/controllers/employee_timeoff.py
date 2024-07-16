@@ -30,6 +30,7 @@ class EmployeesTimeoffData(http.Controller):
 
     @http.route('/timeoff/<model("hr.leave"):timeoff>', type='http', auth='user', website=True, methods=['GET', 'POST'])
     def employee_details(self, timeoff, **kw):
+        print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> hello ', timeoff, kw)
         if request.httprequest.method == 'POST':
             # try:
                 select_date_from_period = kw.get('request_date_from_period_0')

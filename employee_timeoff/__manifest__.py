@@ -6,10 +6,13 @@
 
     'author': " PYSquad",
 
-    'depends': ['base', 'website'],
+    'depends': ['base', 'website','hr'],
 
     'data': [
         'view/employee_timeoff.xml',
+        'security/ir.rule.xml',
+        'security/ir.model.access.csv',
+
     ],
 
     'assets': {
