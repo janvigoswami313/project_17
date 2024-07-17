@@ -3,13 +3,36 @@ from odoo.http import request
 from werkzeug.utils import redirect
 
 class EmployeesTimeoffData(http.Controller):
-    @http.route('/timeoff/new', type='http', auth="user", website=True)
-    def new_timeoff(self, employee_id=None, **kw):
-        if not employee_id:
-            return redirect('/employee_timeoff')
+    @http.route('/timeoff/new', type='http', auth="user", website=True, methods=['GET', 'POST'])
+    def new_timeoff(self, **kw):
+        if request.httprequest.method == 'POST':
+            employee_id = kw.get('employee_id')
+            if not employee_id:
+                return request.render('employee_timeoff.error_page', {
+                    'error_message': _("Invalid employee selected. Please try again.")
+                })
 
-        employee = request.env['hr.employee'].sudo().browse(int(employee_id))
-        if not employee:
+            data_to_write = {
+                'holiday_status_id': int(kw.get('holiday_status_id')) if kw.get('holiday_status_id') else False,
+                'request_date_from': kw.get('date_from'),
+                'request_date_to': kw.get('date_to'),
+                'name': kw.get('description'),
+                'employee_id': int(employee_id),
+                'request_unit_half': kw.get('half_day_checkbox') == 'on',
+                'request_unit_hours': kw.get('custom_hours_checkbox') == 'on',
+                'request_hour_from': kw.get('custom_hour_from'),
+                'request_hour_to': kw.get('custom_hour_to'),
+            }
+
+            new_timeoff = request.env['hr.leave'].sudo().create(data_to_write)
+            return redirect('/timeoff/%s' % new_timeoff.id)
+
+        employee_id = kw.get('employee_id')
+        if employee_id:
+            employee = request.env['hr.employee'].sudo().browse(int(employee_id))
+            if not employee:
+                return redirect('/employee_timeoff')
+        else:
             return redirect('/employee_timeoff')
 
         new_timeoff = request.env['hr.leave'].sudo().new({
@@ -30,7 +53,8 @@ class EmployeesTimeoffData(http.Controller):
             'timeoff': new_timeoff,
             'holiday_off': holiday_off,
             'stages': stages,
-            'create_new': True
+            'create_new': True,
+            'employee_id': employee.id,
         })
     @http.route('/employee_timeoff', type='http', auth='user', website=True)
     def employee_timeoff(self, employee_id=None):
@@ -54,54 +78,25 @@ class EmployeesTimeoffData(http.Controller):
             'employee_id': employee_id,
             'employee_ids': employee_ids,
             'employees_timeoff_data': employees_timeoff_data,
-
         })
         return response
 
     @http.route('/timeoff/<model("hr.leave"):timeoff>', type='http', auth='user', website=True, methods=['GET', 'POST'])
     def employee_details(self, timeoff, **kw):
-        data_to_write = {} 
-
         if request.httprequest.method == 'POST':
-            select_date_from_period = kw.get('request_date_from_period_0')
-            select_custom_hour_from = kw.get('custom_hour_from')
-            select_custom_hour_to = kw.get('custom_hour_to')
-
-            half_day_checked = kw.get('half_day_checkbox')
-            custom_hours_checked = kw.get('custom_hours_checkbox')
-
             data_to_write = {
                 'holiday_status_id': int(kw.get('holiday_status_id')) if kw.get('holiday_status_id') else False,
+                'request_date_from': kw.get('date_from'),
                 'request_date_to': kw.get('date_to'),
-                'request_unit_half': half_day_checked == 'on',
-                'request_unit_hours': custom_hours_checked == 'on',
                 'name': kw.get('description'),
-                'request_date_from_period': select_date_from_period,
-                'request_hour_from': select_custom_hour_from,
-                'request_hour_to': select_custom_hour_to,
+                'request_unit_half': kw.get('half_day_checkbox') == 'on',
+                'request_unit_hours': kw.get('custom_hours_checkbox') == 'on',
+                'request_hour_from': kw.get('custom_hour_from'),
+                'request_hour_to': kw.get('custom_hour_to'),
             }
 
-            if half_day_checked == 'on':
-                data_to_write['request_date_from'] = kw.get('half_day_date')
-            elif custom_hours_checked == 'on':
-                data_to_write['request_date_from'] = kw.get('custom_hour_date')
-            else:
-                data_to_write['request_date_from'] = kw.get('date_from')
-
-            if kw.get('create_new') == 'true':
-                employee_id = kw.get('employee_id')
-                if employee_id:
-                    employee = request.env['hr.employee'].sudo().browse(int(employee_id))
-                    if employee:
-                        data_to_write['employee_id'] = employee.id
-                        new_timeoff = request.env['hr.leave'].sudo().create(data_to_write)
-                        return redirect('/timeoff/%s' % new_timeoff.id)
-                return request.render('employee_timeoff.error_page', {
-                    'error_message': _("Invalid employee selected. Please try again.")
-                })
-            else:
-                timeoff.sudo().write(data_to_write)
-                return redirect('/timeoff/%s' % timeoff.id)
+            timeoff.sudo().write(data_to_write)
+            return redirect('/timeoff/%s' % timeoff.id)
 
         stages = [
             {'name': 'To Submit', 'key': 'draft', 'sequence': 1},
@@ -112,6 +107,7 @@ class EmployeesTimeoffData(http.Controller):
             {'name': 'Canceled', 'key': 'cancel', 'sequence': 6},
         ]
         holiday_off = request.env['hr.leave.type'].sudo().search([])
+
 
         return request.render('employee_timeoff.employee_timeoff_data_form', {
             'timeoff': timeoff,

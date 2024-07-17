@@ -6,7 +6,7 @@
 
     'author': " PYSquad",
 
-    'depends': ['base', 'website','hr'],
+    'depends': ['base', 'website','hr','hr_holidays'],
 
     'data': [
         'view/employee_timeoff.xml',

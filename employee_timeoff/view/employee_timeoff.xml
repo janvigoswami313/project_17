@@ -16,7 +16,7 @@
                     <h3 style="color: #2C3E50; text-align: center; margin-top: 20px;">Employees Timeoff Details</h3>
                    <div style="margin-bottom: 20px; ">
                     <a t-attf-href="/timeoff/new?employee_id={{ employee_id }}" class="btn btn-primary" id="new_timeoff_btn"
-                       style="margin-top:20px; margin-left:4px; background-color:#520052; color:white;">
+                       style="margin-top:20px; margin-left:4px; background-color:#520052; color:white;" data-employee-id="${employee.id}">
                         New TimeOff
                     </a>
                 </div>
@@ -55,8 +55,9 @@
 
     <template id="employee_timeoff_data_form" name="Employee Timeoff Form">
         <t t-call="website.layout">
-            <form t-attf-action="/timeoff/{{ timeoff.id }}" method="post" id="employees_timeoff_data_form" >
+            <form t-att-action="timeoff and timeoff.id and '/timeoff/%s' % timeoff.id or '/timeoff/new'" method="post" id="employees_timeoff_data_form" >
                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <input type="hidden" name="employee_id" t-att-value="employee_id"/>
                 <div id="wrap" class="oe_structure oe_empty">
                     <div class="container">
 <!--                        <div style="margin-bottom: 20px; ">-->
@@ -275,8 +276,8 @@
                                 <textarea name="description" id="description" style="width:41%;" class="inp1 " placeholder="Add a description..."><t t-esc="timeoff.name"/></textarea>
                             </div>
                             <div id="supporting-docs-container" style="width:100%; ">
-                                <label style="width:17%;" for="supporting_docs">Supporting Documents :</label>
-                                <input type="file" name="supporting_docs" id="supporting_docs" class="inp1"/>
+                                <label style="width:17.5%;" for="supporting_docs">Supporting Documents :</label>
+                                <input type="file" name="supporting_docs" id="supporting_docs" class="inp1" style="width:41%"/>
                             </div>
                         </div>
                     </div>
@@ -295,6 +296,16 @@
                     </footer>
                 </div>
             </form>
+        </t>
+    </template>
+    <template id="error_page" name="Error Page">
+        <t t-call="website.layout">
+            <div class="container">
+                <div class="alert alert-danger" role="alert">
+                    <h4 class="alert-heading">Error</h4>
+                    <p t-esc="error_message"/>
+                </div>
+            </div>
         </t>
     </template>
 </odoo>

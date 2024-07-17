@@ -11,7 +11,6 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
             this.currentStage = options.currentStage || 'To Submit';
             this.stageOrder = ['To Submit', 'To Approve', 'Second Approval', 'Approved', 'Refused', 'Canceled'];
             this.createNew = false;
-
         },
 
 //  declare events
@@ -24,7 +23,6 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
             'click #new_timeoff_btn': '_onNewTimeOffClick',
             'click #save_btn': '_onclick_save_button',
             'click #edit_btn': '_onclick_edit_button',
-
     },
 
 //  start method to run function on initial stage
@@ -127,7 +125,6 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
         $('#custom_hours_checkbox').prop('checked', false);
             self._toggleHoursFields(false);
     },
-
 
     _toggleSupportingDocsContainer: function(selectedHolidayId) {
         var self = this;
@@ -288,7 +285,6 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
     _updateStageStyles: function () {
         this.$('.stage-box').removeClass('active');
         this.$('.stage-box[data-stage="' + this.currentStage + '"]').addClass('active');
-
     },
 
 //  button visibility
@@ -382,7 +378,6 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
         ev.preventDefault();
         this._resetForm();
         this.createNew = true;
-
     },
 
     _resetForm: function () {
@@ -456,7 +451,6 @@ publicWidget.registry.timeoff_websiteProfile = publicWidget.Widget.extend({
                 $fields.prop('disabled', false);
             }
      },
-
 });
 
 return publicWidget.registry.websiteProfile;
